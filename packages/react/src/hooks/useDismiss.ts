@@ -297,7 +297,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     const doc = getDocument(floating);
     escapeKey && doc.addEventListener('keydown', closeOnEscapeKeyDown);
     outsidePress &&
-      doc.addEventListener(outsidePressEvent, closeOnPressOutside);
+      doc.addEventListener(outsidePressEvent, closeOnPressOutside, true);
 
     let ancestors: (Element | Window | VisualViewport)[] = [];
 
@@ -329,7 +329,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     return () => {
       escapeKey && doc.removeEventListener('keydown', closeOnEscapeKeyDown);
       outsidePress &&
-        doc.removeEventListener(outsidePressEvent, closeOnPressOutside);
+        doc.removeEventListener(outsidePressEvent, closeOnPressOutside, true);
       ancestors.forEach((ancestor) => {
         ancestor.removeEventListener('scroll', onScroll);
       });
