@@ -282,6 +282,14 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     onOpenChange(false, event);
   });
 
+  const lazyCloseOnPressOutside = useEffectEvent((event: MouseEvent) => {
+    const handler = () => {
+      closeOnPressOutside(event);
+      event.target?.removeEventListener(outsidePressEvent, handler);
+    };
+    event.target?.addEventListener(outsidePressEvent, handler);
+  });
+
   React.useEffect(() => {
     if (!open || !enabled) {
       return;
@@ -297,7 +305,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     const doc = getDocument(floating);
     escapeKey && doc.addEventListener('keydown', closeOnEscapeKeyDown);
     outsidePress &&
-      doc.addEventListener(outsidePressEvent, closeOnPressOutside, true);
+      doc.addEventListener(outsidePressEvent, lazyCloseOnPressOutside, true);
 
     let ancestors: (Element | Window | VisualViewport)[] = [];
 
@@ -329,7 +337,11 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     return () => {
       escapeKey && doc.removeEventListener('keydown', closeOnEscapeKeyDown);
       outsidePress &&
-        doc.removeEventListener(outsidePressEvent, closeOnPressOutside, true);
+        doc.removeEventListener(
+          outsidePressEvent,
+          lazyCloseOnPressOutside,
+          true
+        );
       ancestors.forEach((ancestor) => {
         ancestor.removeEventListener('scroll', onScroll);
       });
@@ -350,6 +362,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     outsidePressBubbles,
     closeOnEscapeKeyDown,
     closeOnPressOutside,
+    lazyCloseOnPressOutside,
   ]);
 
   React.useEffect(() => {
