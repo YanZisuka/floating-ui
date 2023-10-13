@@ -66,6 +66,7 @@ export interface UseDismissProps {
   outsidePressEvent?: 'pointerdown' | 'mousedown' | 'click';
   ancestorScroll?: boolean;
   bubbles?: boolean | {escapeKey?: boolean; outsidePress?: boolean};
+  capture?: boolean;
 }
 
 /**
@@ -94,6 +95,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     referencePressEvent = 'pointerdown',
     ancestorScroll = false,
     bubbles,
+    capture = true,
   } = props;
 
   const tree = useFloatingTree();
@@ -283,11 +285,11 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
   });
 
   const lazyCloseOnPressOutside = useEffectEvent((event: MouseEvent) => {
-    const handler = () => {
-      closeOnPressOutside(event);
-      event.target?.removeEventListener(outsidePressEvent, handler);
-    };
-    event.target?.addEventListener(outsidePressEvent, handler);
+    event.target?.addEventListener(
+      outsidePressEvent,
+      () => closeOnPressOutside(event),
+      {once: true}
+    );
   });
 
   React.useEffect(() => {
@@ -305,7 +307,9 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     const doc = getDocument(floating);
     escapeKey && doc.addEventListener('keydown', closeOnEscapeKeyDown);
     outsidePress &&
-      doc.addEventListener(outsidePressEvent, lazyCloseOnPressOutside, true);
+      doc.addEventListener(outsidePressEvent, lazyCloseOnPressOutside, {
+        capture,
+      });
 
     let ancestors: (Element | Window | VisualViewport)[] = [];
 
@@ -337,11 +341,9 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     return () => {
       escapeKey && doc.removeEventListener('keydown', closeOnEscapeKeyDown);
       outsidePress &&
-        doc.removeEventListener(
-          outsidePressEvent,
-          lazyCloseOnPressOutside,
-          true
-        );
+        doc.removeEventListener(outsidePressEvent, lazyCloseOnPressOutside, {
+          capture,
+        });
       ancestors.forEach((ancestor) => {
         ancestor.removeEventListener('scroll', onScroll);
       });
@@ -362,6 +364,7 @@ export function useDismiss<RT extends ReferenceType = ReferenceType>(
     outsidePressBubbles,
     closeOnEscapeKeyDown,
     closeOnPressOutside,
+    capture,
     lazyCloseOnPressOutside,
   ]);
 
