@@ -1,5 +1,12 @@
 # @floating-ui/react
 
+## 0.26.1
+
+### Patch Changes
+
+- b1bf998e: feat(useDismiss): add `capture` option and default `outsidePress` to
+  `true`
+
 ## 0.26.0
 
 ### Minor Changes
